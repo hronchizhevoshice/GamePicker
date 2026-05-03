@@ -1,0 +1,23 @@
+package com.example.gamepicker.data.local.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.example.gamepicker.data.local.entity.FavoriteGameEntity
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface FavoriteGameDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(favorite: FavoriteGameEntity)
+
+    @Query("DELETE FROM favorite_games WHERE gameId = :gameId")
+    suspend fun delete(gameId: Int)
+
+    @Query("SELECT * FROM favorite_games ORDER BY addedAt DESC")
+    fun getAllFavorites(): Flow<List<FavoriteGameEntity>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM favorite_games WHERE gameId = :gameId)")
+    suspend fun isFavorite(gameId: Int): Boolean
+}
