@@ -23,4 +23,29 @@ interface RawgApi {
         @Query("key") apiKey: String,
         @Query("language") language: String = "ru"
     ): GameDetailsDto
+
+    @GET("games")
+    suspend fun getGamesByCategory(
+        @Query("key") apiKey: String,
+        @Query("dates") dates: String? = null,
+        @Query("ordering") ordering: String? = null,
+        @Query("page_size") pageSize: Int = 10,
+        @Query("language") language: String = "ru"
+    ): GamesResponse
+
+    @GET("genres")
+    suspend fun getGenres(
+        @Query("key") apiKey: String,
+        @Query("language") language: String = "ru"
+    ): GenresResponse
 }
+
+data class GenresResponse(
+    val results: List<GenreDto>
+)
+
+data class GenreDto(
+    val id: Int,
+    val name: String,
+    val slug: String
+)

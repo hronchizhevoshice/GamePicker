@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.gamepicker.presentation.screens.home.HomeViewModel
+import com.example.gamepicker.presentation.screens.home.components.CategorySection
 
 @Composable
 fun HomeScreen(
@@ -42,7 +42,9 @@ fun HomeScreen(
             }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
         OutlinedTextField(
             value = state.searchQuery,
             onValueChange = { viewModel.searchGames(it) },
@@ -54,7 +56,7 @@ fun HomeScreen(
         )
 
         when {
-            state.isLoading && state.games.isEmpty() -> {
+            state.isLoading && state.games.isEmpty() && state.topRatedGames.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -80,9 +82,52 @@ fun HomeScreen(
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
+                    if (state.topRatedGames.isNotEmpty()) {
+                        item {
+                            CategorySection(
+                                title = "Лучшие игры",
+                                games = state.topRatedGames,
+                                onGameClick = { gameId ->
+                                    navController.navigate("details/$gameId")
+                                }
+                            )
+                        }
+                    }
+
+                    if (state.popularGames.isNotEmpty()) {
+                        item {
+                            CategorySection(
+                                title = "Популярные игры",
+                                games = state.popularGames,
+                                onGameClick = { gameId ->
+                                    navController.navigate("details/$gameId")
+                                }
+                            )
+                        }
+                    }
+
+                    if (state.newReleases.isNotEmpty()) {
+                        item {
+                            CategorySection(
+                                title = "Новинки",
+                                games = state.newReleases,
+                                onGameClick = { gameId ->
+                                    navController.navigate("details/$gameId")
+                                }
+                            )
+                        }
+                    }
+
+                    item {
+                        Text(
+                            text = "Все игры",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+
                     items(state.games) { game ->
                         GameCard(
                             game = game,
@@ -124,7 +169,8 @@ fun GameCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(

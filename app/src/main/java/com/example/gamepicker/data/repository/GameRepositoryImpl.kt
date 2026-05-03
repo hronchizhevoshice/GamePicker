@@ -1,6 +1,7 @@
 package com.example.gamepicker.data.repository
 
 import com.example.gamepicker.BuildConfig
+import com.example.gamepicker.data.remote.api.GenreDto
 import com.example.gamepicker.data.remote.api.RawgApi
 import com.example.gamepicker.data.remote.dto.GameDetailsDto
 import com.example.gamepicker.data.remote.dto.GamesResponse
@@ -14,14 +15,29 @@ class GameRepositoryImpl @Inject constructor(
     override suspend fun getGames(
         page: Int,
         pageSize: Int,
-        search: String?
+        search: String?,
+        ordering: String?
     ): GamesResponse {
         return api.getGames(
             apiKey = BuildConfig.RAWG_API_KEY,
             page = page,
             pageSize = pageSize,
             search = search,
-            ordering = "-rating",
+            ordering = ordering ?: "-rating",
+            language = "ru"
+        )
+    }
+
+    override suspend fun getGamesByDateRange(
+        dates: String,
+        pageSize: Int,
+        ordering: String?
+    ): GamesResponse {
+        return api.getGamesByCategory(
+            apiKey = BuildConfig.RAWG_API_KEY,
+            dates = dates,
+            ordering = ordering,
+            pageSize = pageSize,
             language = "ru"
         )
     }
@@ -32,5 +48,12 @@ class GameRepositoryImpl @Inject constructor(
             apiKey = BuildConfig.RAWG_API_KEY,
             language = "ru"
         )
+    }
+
+    override suspend fun getGenres(): List<GenreDto> {
+        return api.getGenres(
+            apiKey = BuildConfig.RAWG_API_KEY,
+            language = "ru"
+        ).results
     }
 }

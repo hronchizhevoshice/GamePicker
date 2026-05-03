@@ -15,6 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getGamesUseCase: GetGamesUseCase,
+    private val getGamesByCategoryUseCase: GetGamesByCategoryUseCase,
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val addToFavoritesUseCase: AddToFavoritesUseCase,
     private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase
@@ -26,6 +27,7 @@ class HomeViewModel @Inject constructor(
     init {
         loadGames()
         loadFavorites()
+        loadCategories()
     }
 
     private fun loadFavorites() {
@@ -38,11 +40,31 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun loadCategories() {
+        viewModelScope.launch {
+            val topRatedResult = getGamesByCategoryUseCase(CategoryType.TOP_RATED)
+            if (topRatedResult.isSuccess) {
+                _state.value = _state.value.copy(topRatedGames = topRatedResult.getOrNull() ?: emptyList())
+            }
+
+            val popularResult = getGamesByCategoryUseCase(CategoryType.POPULAR)
+            if (popularResult.isSuccess) {
+                _state.value = _state.value.copy(popularGames = popularResult.getOrNull() ?: emptyList())
+            }
+
+            val newReleasesResult = getGamesByCategoryUseCase(CategoryType.NEW_RELEASES)
+            if (newReleasesResult.isSuccess) {
+                _state.value = _state.value.copy(newReleases = newReleasesResult.getOrNull() ?: emptyList())
+            }
+        }
+    }
+
     fun loadGames(page: Int = 1) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            val result = getGamesUseCase(page = page, pageSize = 20)
+            val searchQuery = _state.value.searchQuery
+            val result = getGamesUseCase(page = page, pageSize = 20, search = searchQuery.takeIf { it.isNotBlank() })
 
             result.onSuccess { games ->
                 _state.value = _state.value.copy(
@@ -111,6 +133,9 @@ class HomeViewModel @Inject constructor(
 data class HomeState(
     val isLoading: Boolean = false,
     val games: List<GameDto> = emptyList(),
+    val topRatedGames: List<GameDto> = emptyList(),
+    val popularGames: List<GameDto> = emptyList(),
+    val newReleases: List<GameDto> = emptyList(),
     val favoriteIds: Set<Int> = emptySet(),
     val currentPage: Int = 1,
     val hasMore: Boolean = true,
