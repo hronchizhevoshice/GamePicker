@@ -8,8 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -84,48 +84,59 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    if (state.topRatedGames.isNotEmpty()) {
+                    // Показываем категории только если поле поиска пустое
+                    if (state.searchQuery.isBlank()) {
+                        if (state.topRatedGames.isNotEmpty()) {
+                            item {
+                                CategorySection(
+                                    title = "Лучшие игры",
+                                    games = state.topRatedGames,
+                                    onGameClick = { gameId ->
+                                        navController.navigate("details/$gameId")
+                                    }
+                                )
+                            }
+                        }
+
+                        if (state.popularGames.isNotEmpty()) {
+                            item {
+                                CategorySection(
+                                    title = "Популярные игры",
+                                    games = state.popularGames,
+                                    onGameClick = { gameId ->
+                                        navController.navigate("details/$gameId")
+                                    }
+                                )
+                            }
+                        }
+
+                        if (state.newReleases.isNotEmpty()) {
+                            item {
+                                CategorySection(
+                                    title = "Новинки",
+                                    games = state.newReleases,
+                                    onGameClick = { gameId ->
+                                        navController.navigate("details/$gameId")
+                                    }
+                                )
+                            }
+                        }
+
                         item {
-                            CategorySection(
-                                title = "Лучшие игры",
-                                games = state.topRatedGames,
-                                onGameClick = { gameId ->
-                                    navController.navigate("details/$gameId")
-                                }
+                            Text(
+                                text = "Все игры",
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                         }
-                    }
-
-                    if (state.popularGames.isNotEmpty()) {
+                    } else {
                         item {
-                            CategorySection(
-                                title = "Популярные игры",
-                                games = state.popularGames,
-                                onGameClick = { gameId ->
-                                    navController.navigate("details/$gameId")
-                                }
+                            Text(
+                                text = "Результаты поиска",
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                         }
-                    }
-
-                    if (state.newReleases.isNotEmpty()) {
-                        item {
-                            CategorySection(
-                                title = "Новинки",
-                                games = state.newReleases,
-                                onGameClick = { gameId ->
-                                    navController.navigate("details/$gameId")
-                                }
-                            )
-                        }
-                    }
-
-                    item {
-                        Text(
-                            text = "Все игры",
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
                     }
 
                     items(state.games) { game ->
@@ -217,7 +228,7 @@ fun GameCard(
 
             IconButton(onClick = onFavoriteClick) {
                 Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    imageVector = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                     contentDescription = if (isFavorite) "Удалить из избранного" else "В избранное",
                     tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
