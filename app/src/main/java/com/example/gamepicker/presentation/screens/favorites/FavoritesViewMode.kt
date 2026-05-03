@@ -6,6 +6,7 @@ import com.example.gamepicker.data.local.entity.FavoriteGameEntity
 import com.example.gamepicker.data.local.entity.GameStatus
 import com.example.gamepicker.domain.usecase.GetFavoritesUseCase
 import com.example.gamepicker.domain.usecase.RemoveFromFavoritesUseCase
+import com.example.gamepicker.domain.usecase.UpdateGameNotesUseCase
 import com.example.gamepicker.domain.usecase.UpdateGameStatusUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,8 @@ import javax.inject.Inject
 class FavoritesViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase,
-    private val updateGameStatusUseCase: UpdateGameStatusUseCase
+    private val updateGameStatusUseCase: UpdateGameStatusUseCase,
+    private val updateGameNotesUseCase: UpdateGameNotesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FavoritesState())
@@ -56,6 +58,12 @@ class FavoritesViewModel @Inject constructor(
     fun updateStatus(gameId: Int, status: GameStatus) {
         viewModelScope.launch {
             updateGameStatusUseCase(gameId, status)
+        }
+    }
+
+    fun updateNotes(gameId: Int, notes: String) {
+        viewModelScope.launch {
+            updateGameNotesUseCase(gameId, notes)
         }
     }
 }

@@ -10,4 +10,5 @@ interface FavoriteRepository {
     fun getFavorites(): Flow<List<FavoriteGameEntity>>
     suspend fun isFavorite(gameId: Int): Boolean
     suspend fun updateStatus(gameId: Int, status: GameStatus)
+    suspend fun updateNotes(gameId: Int, notes: String)
 }

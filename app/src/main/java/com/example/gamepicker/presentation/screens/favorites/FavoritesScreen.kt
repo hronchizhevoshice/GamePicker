@@ -21,6 +21,7 @@ import coil.compose.AsyncImage
 import com.example.gamepicker.data.local.entity.GameStatus
 import com.example.gamepicker.data.local.entity.getDisplayName
 import com.example.gamepicker.data.local.entity.getStatusColor
+import com.example.gamepicker.presentation.components.NotesDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +33,8 @@ fun FavoritesScreen(
     var isSelectionMode by remember { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf(setOf<Int>()) }
     var expandedStatusMenuId by remember { mutableStateOf<Int?>(null) }
+    var showNotesDialog by remember { mutableStateOf(false) }
+    var selectedGameForNotes by remember { mutableStateOf<com.example.gamepicker.data.local.entity.FavoriteGameEntity?>(null) }
 
     fun toggleSelection(gameId: Int) {
         selectedIds = if (selectedIds.contains(gameId)) {
@@ -146,6 +149,10 @@ fun FavoritesScreen(
                                     toggleSelection(game.gameId)
                                 }
                             },
+                            onNotesClick = {
+                                selectedGameForNotes = game
+                                showNotesDialog = true
+                            },
                             onStatusChange = { newStatus ->
                                 viewModel.updateStatus(game.gameId, newStatus)
                             },
@@ -157,6 +164,20 @@ fun FavoritesScreen(
             }
         }
     }
+
+    if (showNotesDialog && selectedGameForNotes != null) {
+        NotesDialog(
+            currentNotes = selectedGameForNotes!!.notes,
+            onDismiss = {
+                showNotesDialog = false
+                selectedGameForNotes = null
+            },
+            onSave = { notes ->
+                viewModel.updateNotes(selectedGameForNotes!!.gameId, notes)
+                selectedGameForNotes = null
+            }
+        )
+    }
 }
 
 @Composable
@@ -167,6 +188,7 @@ fun FavoriteCard(
     onSelect: () -> Unit,
     onRemove: () -> Unit,
     onClick: () -> Unit,
+    onNotesClick: () -> Unit,
     onStatusChange: (GameStatus) -> Unit,
     expandedStatusMenuId: Int?,
     onExpandedChange: (Int?) -> Unit
@@ -237,51 +259,63 @@ fun FavoriteCard(
                 )
 
                 if (!isSelectionMode) {
-                    Box {
-                        Row(
-                            modifier = Modifier
-                                .background(
-                                    getStatusColor(currentStatus).copy(alpha = 0.2f),
-                                    RoundedCornerShape(8.dp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box {
+                            Row(
+                                modifier = Modifier
+                                    .background(
+                                        getStatusColor(currentStatus).copy(alpha = 0.2f),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { onExpandedChange(game.gameId) }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = currentStatus.getDisplayName(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = getStatusColor(currentStatus)
                                 )
-                                .clickable { onExpandedChange(game.gameId) }
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = currentStatus.getDisplayName(),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = getStatusColor(currentStatus)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "Изменить статус",
-                                tint = getStatusColor(currentStatus),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = expandedStatusMenuId == game.gameId,
-                            onDismissRequest = { onExpandedChange(null) }
-                        ) {
-                            GameStatus.values().forEach { status ->
-                                DropdownMenuItem(
-                                    text = { Text(status.getDisplayName()) },
-                                    onClick = {
-                                        onStatusChange(status)
-                                        onExpandedChange(null)
-                                    },
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(12.dp)
-                                                .background(getStatusColor(status), RoundedCornerShape(6.dp))
-                                        )
-                                    }
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = "Изменить статус",
+                                    tint = getStatusColor(currentStatus),
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
+
+                            DropdownMenu(
+                                expanded = expandedStatusMenuId == game.gameId,
+                                onDismissRequest = { onExpandedChange(null) }
+                            ) {
+                                GameStatus.values().forEach { status ->
+                                    DropdownMenuItem(
+                                        text = { Text(status.getDisplayName()) },
+                                        onClick = {
+                                            onStatusChange(status)
+                                            onExpandedChange(null)
+                                        },
+                                        leadingIcon = {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(12.dp)
+                                                    .background(getStatusColor(status), RoundedCornerShape(6.dp))
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        IconButton(onClick = onNotesClick) {
+                            Icon(
+                                imageVector = Icons.Default.EditNote,
+                                contentDescription = "Заметки",
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }

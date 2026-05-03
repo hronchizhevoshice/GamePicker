@@ -14,6 +14,7 @@ data class FavoriteGameEntity(
     val backgroundImage: String?,
     val genres: String,
     val status: String = GameStatus.PLAN_TO_PLAY.name,
+    val notes: String = "",
     val addedAt: Long = System.currentTimeMillis()
 )
 
@@ -35,7 +36,7 @@ fun GameStatus.getDisplayName(): String {
     }
 }
 
-fun getStatusColor(status: GameStatus): androidx.compose.ui.graphics.Color {
+fun getStatusColor(status: GameStatus): Color {
     return when (status) {
         GameStatus.PLAYING -> Color(0xFF2196F3)
         GameStatus.COMPLETED -> Color(0xFF4CAF50)
