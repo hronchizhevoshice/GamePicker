@@ -11,4 +11,5 @@ interface FavoriteRepository {
     suspend fun isFavorite(gameId: Int): Boolean
     suspend fun updateStatus(gameId: Int, status: GameStatus)
     suspend fun updateNotes(gameId: Int, notes: String)
+    suspend fun updateUserRating(gameId: Int, userRating: Int)
 }

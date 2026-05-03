@@ -34,4 +34,8 @@ class FavoriteRepositoryImpl @Inject constructor(
     override suspend fun updateNotes(gameId: Int, notes: String) {
         dao.updateNotes(gameId, notes)
     }
+
+    override suspend fun updateUserRating(gameId: Int, userRating: Int) {
+        dao.updateUserRating(gameId, userRating)
+    }
 }
