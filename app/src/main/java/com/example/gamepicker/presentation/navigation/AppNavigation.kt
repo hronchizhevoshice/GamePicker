@@ -36,11 +36,12 @@ fun AppNavigation() {
             GameDrawer(
                 currentRoute = currentRoute,
                 onNavigate = { route ->
+                    // Очищаем back stack при переходе через меню
                     navController.navigate(route) {
-                        popUpTo("home") { saveState = true }
+                        popUpTo(0) { inclusive = true }
                         launchSingleTop = true
-                        restoreState = true
                     }
+                    scope.launch { drawerState.close() }
                 },
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }

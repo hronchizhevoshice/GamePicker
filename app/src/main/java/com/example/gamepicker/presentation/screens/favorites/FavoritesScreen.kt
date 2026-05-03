@@ -2,7 +2,6 @@ package com.example.gamepicker.presentation.screens.favorites
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.gamepicker.data.local.entity.GameStatus
+import com.example.gamepicker.data.local.entity.getDisplayName
+import com.example.gamepicker.data.local.entity.getStatusColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +31,7 @@ fun FavoritesScreen(
     val state by viewModel.state.collectAsState()
     var isSelectionMode by remember { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf(setOf<Int>()) }
+    var expandedStatusMenuId by remember { mutableStateOf<Int?>(null) }
 
     fun toggleSelection(gameId: Int) {
         selectedIds = if (selectedIds.contains(gameId)) {
@@ -134,12 +137,6 @@ fun FavoritesScreen(
                             game = game,
                             isSelected = selectedIds.contains(game.gameId),
                             isSelectionMode = isSelectionMode,
-                            onLongClick = {
-                                if (!isSelectionMode) {
-                                    isSelectionMode = true
-                                    selectedIds = setOf(game.gameId)
-                                }
-                            },
                             onSelect = { toggleSelection(game.gameId) },
                             onRemove = { viewModel.removeFromFavorites(game.gameId) },
                             onClick = {
@@ -148,7 +145,12 @@ fun FavoritesScreen(
                                 } else {
                                     toggleSelection(game.gameId)
                                 }
-                            }
+                            },
+                            onStatusChange = { newStatus ->
+                                viewModel.updateStatus(game.gameId, newStatus)
+                            },
+                            expandedStatusMenuId = expandedStatusMenuId,
+                            onExpandedChange = { expandedStatusMenuId = it }
                         )
                     }
                 }
@@ -162,18 +164,23 @@ fun FavoriteCard(
     game: com.example.gamepicker.data.local.entity.FavoriteGameEntity,
     isSelected: Boolean,
     isSelectionMode: Boolean,
-    onLongClick: () -> Unit,
     onSelect: () -> Unit,
     onRemove: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onStatusChange: (GameStatus) -> Unit,
+    expandedStatusMenuId: Int?,
+    onExpandedChange: (Int?) -> Unit
 ) {
+    val currentStatus = try {
+        GameStatus.valueOf(game.status)
+    } catch (e: Exception) {
+        GameStatus.PLAN_TO_PLAY
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .then(
-                if (isSelectionMode) Modifier else Modifier
-            ),
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected)
@@ -185,16 +192,7 @@ fun FavoriteCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
-                .then(
-                    if (!isSelectionMode) Modifier
-                        .clickable { onLongClick() }
-                        .combinedClickable(
-                            onClick = {},
-                            onLongClick = onLongClick
-                        )
-                    else Modifier
-                ),
+                .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -225,7 +223,8 @@ fun FavoriteCard(
                 )
                 Text(
                     text = game.released?.take(4) ?: "Неизвестно",
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
                 Text(
                     text = "Рейтинг: ${game.rating}/5",
@@ -236,6 +235,56 @@ fun FavoriteCard(
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1
                 )
+
+                if (!isSelectionMode) {
+                    Box {
+                        Row(
+                            modifier = Modifier
+                                .background(
+                                    getStatusColor(currentStatus).copy(alpha = 0.2f),
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .clickable { onExpandedChange(game.gameId) }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = currentStatus.getDisplayName(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = getStatusColor(currentStatus)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "Изменить статус",
+                                tint = getStatusColor(currentStatus),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expandedStatusMenuId == game.gameId,
+                            onDismissRequest = { onExpandedChange(null) }
+                        ) {
+                            GameStatus.values().forEach { status ->
+                                DropdownMenuItem(
+                                    text = { Text(status.getDisplayName()) },
+                                    onClick = {
+                                        onStatusChange(status)
+                                        onExpandedChange(null)
+                                    },
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(12.dp)
+                                                .background(getStatusColor(status), RoundedCornerShape(6.dp))
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             if (!isSelectionMode) {

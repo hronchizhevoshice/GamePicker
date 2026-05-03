@@ -1,5 +1,6 @@
 package com.example.gamepicker.data.local.entity
 
+import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -12,7 +13,7 @@ data class FavoriteGameEntity(
     val released: String?,
     val backgroundImage: String?,
     val genres: String,
-    val status: String = "PLAN_TO_PLAY",
+    val status: String = GameStatus.PLAN_TO_PLAY.name,
     val addedAt: Long = System.currentTimeMillis()
 )
 
@@ -31,5 +32,15 @@ fun GameStatus.getDisplayName(): String {
         GameStatus.ON_HOLD -> "Отложена"
         GameStatus.DROPPED -> "Брошена"
         GameStatus.PLAN_TO_PLAY -> "Планирую"
+    }
+}
+
+fun getStatusColor(status: GameStatus): androidx.compose.ui.graphics.Color {
+    return when (status) {
+        GameStatus.PLAYING -> Color(0xFF2196F3)
+        GameStatus.COMPLETED -> Color(0xFF4CAF50)
+        GameStatus.ON_HOLD -> Color(0xFFFF9800)
+        GameStatus.DROPPED -> Color(0xFFF44336)
+        GameStatus.PLAN_TO_PLAY -> Color(0xFF9C27B0)
     }
 }
