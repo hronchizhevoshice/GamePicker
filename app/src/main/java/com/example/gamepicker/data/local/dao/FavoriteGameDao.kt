@@ -33,4 +33,7 @@ interface FavoriteGameDao {
 
     @Query("UPDATE favorite_games SET notes = :notes WHERE gameId = :gameId")
     suspend fun updateNotes(gameId: Int, notes: String)
+
+    @Query("UPDATE favorite_games SET userRating = :userRating WHERE gameId = :gameId")
+    suspend fun updateUserRating(gameId: Int, userRating: Int)
 }

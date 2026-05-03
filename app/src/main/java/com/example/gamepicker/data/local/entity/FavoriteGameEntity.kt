@@ -10,6 +10,7 @@ data class FavoriteGameEntity(
     val gameId: Int,
     val name: String,
     val rating: Double,
+    val userRating: Int = 0,
     val released: String?,
     val backgroundImage: String?,
     val genres: String,
