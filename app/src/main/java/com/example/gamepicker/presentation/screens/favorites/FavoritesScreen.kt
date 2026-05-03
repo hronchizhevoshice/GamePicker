@@ -22,6 +22,7 @@ import com.example.gamepicker.data.local.entity.GameStatus
 import com.example.gamepicker.data.local.entity.getDisplayName
 import com.example.gamepicker.data.local.entity.getStatusColor
 import com.example.gamepicker.presentation.components.NotesDialog
+import com.example.gamepicker.presentation.components.RatingBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,6 +157,9 @@ fun FavoritesScreen(
                             onStatusChange = { newStatus ->
                                 viewModel.updateStatus(game.gameId, newStatus)
                             },
+                            onRatingChange = { newRating ->
+                                viewModel.updateUserRating(game.gameId, newRating)
+                            },
                             expandedStatusMenuId = expandedStatusMenuId,
                             onExpandedChange = { expandedStatusMenuId = it }
                         )
@@ -190,6 +194,7 @@ fun FavoriteCard(
     onClick: () -> Unit,
     onNotesClick: () -> Unit,
     onStatusChange: (GameStatus) -> Unit,
+    onRatingChange: (Int) -> Unit,
     expandedStatusMenuId: Int?,
     onExpandedChange: (Int?) -> Unit
 ) {
@@ -216,7 +221,7 @@ fun FavoriteCard(
                 .fillMaxWidth()
                 .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             if (isSelectionMode) {
                 Checkbox(
@@ -248,15 +253,33 @@ fun FavoriteCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
+
                 Text(
                     text = "Рейтинг: ${game.rating}/5",
                     style = MaterialTheme.typography.bodySmall
                 )
+
                 Text(
                     text = "Жанры: ${game.genres}",
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1
                 )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Text(
+                        text = "Моя оценка: ",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    RatingBar(
+                        rating = game.userRating,
+                        onRatingChange = { newRating ->
+                            onRatingChange(newRating)
+                        }
+                    )
+                }
 
                 if (!isSelectionMode) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
