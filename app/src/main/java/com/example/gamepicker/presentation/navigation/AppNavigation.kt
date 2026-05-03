@@ -6,12 +6,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.gamepicker.R
 import com.example.gamepicker.presentation.components.GameDrawer
+import com.example.gamepicker.presentation.screens.details.DetailsScreen
 import com.example.gamepicker.presentation.screens.favorites.FavoritesScreen
 import com.example.gamepicker.presentation.screens.home.HomeScreen
 import com.example.gamepicker.presentation.theme.Teal
@@ -83,10 +86,17 @@ fun AppNavigation() {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable(Screen.Home.route) {
-                    HomeScreen()
+                    HomeScreen(navController = navController)
                 }
                 composable(Screen.Favorites.route) {
                     FavoritesScreen()
+                }
+                composable(
+                    route = Screen.Details.route,
+                    arguments = listOf(navArgument("gameId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val gameId = backStackEntry.arguments?.getInt("gameId") ?: 0
+                    DetailsScreen(gameId = gameId)
                 }
             }
         }

@@ -18,7 +18,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "RAWG_API_KEY", "\"demo_key\"")
+        buildConfigField("String", "RAWG_API_KEY", "\"edde8e2b1d8b468ab63ee5f81991a144\"")
     }
 
     buildTypes {
