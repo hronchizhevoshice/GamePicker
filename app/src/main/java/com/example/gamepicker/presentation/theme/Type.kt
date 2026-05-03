@@ -1,4 +1,4 @@
-package com.example.gamepicker.ui.theme
+package com.example.gamepicker.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
