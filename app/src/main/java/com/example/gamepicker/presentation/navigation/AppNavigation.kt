@@ -89,7 +89,7 @@ fun AppNavigation() {
                     HomeScreen(navController = navController)
                 }
                 composable(Screen.Favorites.route) {
-                    FavoritesScreen()
+                    FavoritesScreen(navController = navController)
                 }
                 composable(
                     route = Screen.Details.route,
