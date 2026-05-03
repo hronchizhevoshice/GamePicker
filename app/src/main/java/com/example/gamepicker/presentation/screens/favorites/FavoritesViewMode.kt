@@ -41,6 +41,14 @@ class FavoritesViewModel @Inject constructor(
             removeFromFavoritesUseCase(gameId)
         }
     }
+
+    fun removeMultipleFromFavorites(gameIds: List<Int>) {
+        viewModelScope.launch {
+            gameIds.forEach { gameId ->
+                removeFromFavoritesUseCase(gameId)
+            }
+        }
+    }
 }
 
 data class FavoritesState(

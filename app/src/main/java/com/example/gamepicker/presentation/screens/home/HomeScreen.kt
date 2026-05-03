@@ -7,6 +7,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.gamepicker.presentation.navigation.Screen
+import com.example.gamepicker.presentation.screens.home.HomeViewModel
 
 @Composable
 fun HomeScreen(
@@ -39,9 +42,7 @@ fun HomeScreen(
             }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
             value = state.searchQuery,
             onValueChange = { viewModel.searchGames(it) },
@@ -85,8 +86,12 @@ fun HomeScreen(
                     items(state.games) { game ->
                         GameCard(
                             game = game,
+                            isFavorite = state.favoriteIds.contains(game.id),
                             onClick = {
                                 navController.navigate("details/${game.id}")
+                            },
+                            onFavoriteClick = {
+                                viewModel.toggleFavorite(game)
                             }
                         )
                     }
@@ -112,7 +117,9 @@ fun HomeScreen(
 @Composable
 fun GameCard(
     game: com.example.gamepicker.data.remote.dto.GameDto,
-    onClick: () -> Unit
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -124,7 +131,8 @@ fun GameCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 model = game.backgroundImage,
@@ -158,6 +166,14 @@ fun GameCard(
                     text = "Жанры: ${game.genres.take(2).joinToString { it.name }}",
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1
+                )
+            }
+
+            IconButton(onClick = onFavoriteClick) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Удалить из избранного" else "В избранное",
+                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             }
         }

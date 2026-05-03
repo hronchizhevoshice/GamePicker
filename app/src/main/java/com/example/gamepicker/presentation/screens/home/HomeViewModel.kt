@@ -2,8 +2,9 @@ package com.example.gamepicker.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gamepicker.data.local.entity.FavoriteGameEntity
 import com.example.gamepicker.data.remote.dto.GameDto
-import com.example.gamepicker.domain.usecase.GetGamesUseCase
+import com.example.gamepicker.domain.usecase.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +14,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getGamesUseCase: GetGamesUseCase
+    private val getGamesUseCase: GetGamesUseCase,
+    private val getFavoritesUseCase: GetFavoritesUseCase,
+    private val addToFavoritesUseCase: AddToFavoritesUseCase,
+    private val removeFromFavoritesUseCase: RemoveFromFavoritesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -21,6 +25,17 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadGames()
+        loadFavorites()
+    }
+
+    private fun loadFavorites() {
+        viewModelScope.launch {
+            getFavoritesUseCase().collect { favorites ->
+                _state.value = _state.value.copy(
+                    favoriteIds = favorites.map { it.gameId }.toSet()
+                )
+            }
+        }
     }
 
     fun loadGames(page: Int = 1) {
@@ -72,11 +87,31 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    fun toggleFavorite(game: GameDto) {
+        viewModelScope.launch {
+            if (_state.value.favoriteIds.contains(game.id)) {
+                removeFromFavoritesUseCase(game.id)
+            } else {
+                addToFavoritesUseCase(
+                    FavoriteGameEntity(
+                        gameId = game.id,
+                        name = game.name,
+                        rating = game.rating,
+                        released = game.released,
+                        backgroundImage = game.backgroundImage,
+                        genres = game.genres.take(2).joinToString { it.name }
+                    )
+                )
+            }
+        }
+    }
 }
 
 data class HomeState(
     val isLoading: Boolean = false,
     val games: List<GameDto> = emptyList(),
+    val favoriteIds: Set<Int> = emptySet(),
     val currentPage: Int = 1,
     val hasMore: Boolean = true,
     val searchQuery: String = "",
