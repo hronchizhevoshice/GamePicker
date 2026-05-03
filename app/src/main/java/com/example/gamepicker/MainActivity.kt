@@ -9,7 +9,9 @@ import androidx.compose.ui.Modifier
 import com.example.gamepicker.presentation.navigation.AppNavigation
 import com.example.gamepicker.presentation.theme.GamePickerTheme
 import com.example.gamepicker.presentation.theme.Teal
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
